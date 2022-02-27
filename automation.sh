@@ -21,7 +21,7 @@ then
 fi
 
 # Ensure apache2 service is enabled
-enabled=$(systemctl is-enabled apace2 | grep "enabled")
+enabled=$(systemctl is-enabled apache2 | grep "enabled")
 if [[ enabled != ${enabled} ]]
 then
 	# Enable apache2 service
@@ -44,4 +44,27 @@ then
 	aws s3 cp /tmp/${name}-httpd-logs-${timestamp}.tar s3://${s3_bucket}/${name}-httpd-logs-${timestamp}.tar
 fi
 
+# git check
 
+# Check if inventory.html exists or not
+dir="/var/www/html"
+if [[ ! -f ${dir}/inventory.html ]]
+then
+	echo -e 'Log Type\t-\tTime Created\t-\tType\t-\tSize' >> ${dir}/inventory.html
+fi
+
+# Inserting a log into the inventory.html
+if [[ -f ${dir}/inventory.html ]]
+then
+	# echo \n
+	# cat /tmp/${name}-httpd-logs-${timestamp}.tar
+	# echo \n
+	size=$(du -h /tmp/${name}-httpd-logs-${timestamp}.tar | awk '{print $1}')
+	echo -e "httpd-logs\t-\t${timestamp}\t-\ttar\t-\t${size}" >> ${dir}/inventory.html
+fi
+
+# Create a cron job that runs for automation 
+if [[ ! -f /etc/cron.d/automation ]]
+then
+	echo "* * * * * root /home/ubuntu/upgrad-assignment-1/automation-project/automation.sh" >> /etc/cron.d/automation
+fi
